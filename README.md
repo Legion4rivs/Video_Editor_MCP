@@ -1,147 +1,69 @@
-# Video Editor MCP Server
+# React + TypeScript + Vite
 
-A powerful video editing MCP server that leverages FFmpeg to perform video editing operations through natural language commands.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Components
+Currently, two official plugins are available:
 
-### Tools
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-The server implements one main tool:
+## Expanding the ESLint configuration
 
-* `execute_ffmpeg`: Executes FFmpeg commands with progress tracking
-  * Takes a command string as input
-  * Validates and executes FFmpeg operations
-  * Reports real-time progress during processing
-  * Handles errors and provides detailed feedback
-  * Supports all FFmpeg operations including:
-    - Trimming/cutting
-    - Merging videos
-    - Converting formats
-    - Adjusting speed
-    - Adding audio tracks
-    - Extracting audio
-    - Adding subtitles
-    - Basic filters (brightness, contrast, etc.)
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-## Configuration
+```js
+export default tseslint.config([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-### Prerequisites
+      // Remove tseslint.configs.recommended and replace with this
+      ...tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      ...tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      ...tseslint.configs.stylisticTypeChecked,
 
-1. FFmpeg must be installed and accessible in your system PATH
-2. Python 3.9 or higher
-3. Required Python packages:
-   ```
-   mcp
-   httpx
-   ```
-
-### Installation
-
-1. Install FFmpeg if not already installed:
-   ```bash
-   # On macOS with Homebrew
-   brew install ffmpeg
-
-   # On Windows with Chocolatey
-   choco install ffmpeg
-
-   # On Ubuntu/Debian
-   sudo apt install ffmpeg
-   ```
-
-2. Install the video editor package:
-   ```bash
-   uv add video-editor
-   ```
-
-### Claude Desktop Integration
-
-Configure in your Claude Desktop config file:
-
-On MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "video-editor": {
-      "command": "uv",
-      "args": ["run", "video-editor"]
-    }
-  }
-}
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-## Development
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-### Building and Publishing
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-1. Sync dependencies:
-   ```bash
-   uv sync
-   ```
-
-2. Build package:
-   ```bash
-   uv build
-   ```
-
-3. Publish to PyPI:
-   ```bash
-   uv publish
-   ```
-
-Note: Set PyPI credentials via:
-* Token: `--token` or `UV_PUBLISH_TOKEN`
-* Or username/password: `--username`/`UV_PUBLISH_USERNAME` and `--password`/`UV_PUBLISH_PASSWORD`
-
-### Debugging
-
-For the best debugging experience, use the MCP Inspector:
-
-```bash
-npx @modelcontextprotocol/inspector uv --directory /path/to/video_editor run video-editor
+export default tseslint.config([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-### Example Usage
-
-Once connected to Claude Desktop, you can make natural language requests like:
-
-1. "Trim video.mp4 from 1:30 to 2:45"
-2. "Convert input.mp4 to WebM format"
-3. "Speed up video.mp4 by 2x"
-4. "Merge video1.mp4 and video2.mp4"
-5. "Extract audio from video.mp4"
-6. "Add subtitles.srt to video.mp4"
-
-The server will:
-1. Parse your request
-2. Generate the appropriate FFmpeg command
-3. Execute it with progress tracking
-4. Provide feedback on completion
-
-## Error Handling
-
-The server includes robust error handling for:
-- Invalid input files
-- Malformed FFmpeg commands
-- Runtime execution errors
-- Progress tracking issues
-
-All errors are reported back to the client with detailed messages for debugging.
-
-## Security Considerations
-
-- Only processes files in explicitly allowed directories
-- Validates FFmpeg commands before execution
-- Sanitizes all input parameters
-- Reports detailed error messages for security-related issues
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-1. Fork the repository
-2. Create your feature branch
-3. Make your changes
-4. Submit a pull request
-
