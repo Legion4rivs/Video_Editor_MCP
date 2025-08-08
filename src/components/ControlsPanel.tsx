@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useCubeStore } from '../store';
 import { faceForFaceOption, FaceOption, COLOURS } from '@markforster/cubits';
 import * as min2phase from 'min2phase.js';
@@ -38,17 +38,29 @@ const colorToFacelet: { [key in COLOURS]: string } = {
 
 export function ControlsPanel() {
   const { cube, reset, applyMove } = useCubeStore();
+  const solverInitialized = useRef(false);
 
   useEffect(() => {
-    // Initialize the solver when the component mounts
-    console.log("Initializing solver...");
-    min2phase.initFull();
-    console.log("Solver initialized.");
+    if (!solverInitialized.current) {
+      console.log("Initializing solver...");
+      min2phase.initFull();
+      solverInitialized.current = true;
+      console.log("Solver initialized.");
+    }
   }, []);
 
   const handleShuffle = () => {
-    // A more robust shuffle using the library's operator
-    const scramble = useCubeStore.getState().operator.scramble();
+    const moves = ['U', 'D', 'L', 'R', 'F', 'B'];
+    const modifiers = ['', "'", '2'];
+    let scramble = '';
+    for (let i = 0; i < 20; i++) {
+      const move = moves[Math.floor(Math.random() * moves.length)];
+      const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+      scramble += `${move}${modifier} `;
+    }
+    scramble = scramble.trim();
+
+    reset();
     scramble.split(' ').forEach(move => applyMove(move));
     console.log(`Shuffled with: ${scramble}`);
   };
@@ -61,16 +73,11 @@ export function ControlsPanel() {
   const handleSolve = () => {
     console.log("Attempting to solve...");
 
-    // 1. Get the current cube state
     const cubeState = cube.state;
-
-    // 2. Define the face order for the facelet string (U-R-F-D-L-B)
     const faceOrder = [
-      FaceOption.WHITE, FaceOption.RED, FaceOption.BLUE,
-      FaceOption.YELLOW, FaceOption.ORANGE, FaceOption.GREEN
+      FaceOption.UP, FaceOption.RIGHT, FaceOption.FRONT,
+      FaceOption.DOWN, FaceOption.LEFT, FaceOption.BACK
     ];
-
-    // 3. Build the facelet string
     let faceletString = '';
     for (const face of faceOrder) {
       const faceData = faceForFaceOption(cubeState, face);
@@ -85,15 +92,11 @@ export function ControlsPanel() {
     }
 
     console.log("Generated Facelet String:", faceletString);
-
-    // 4. Call the solver
     const solution = min2phase.solve(faceletString);
     console.log("Solver produced solution:", solution);
 
-    // 5. Apply the solution
     if (solution) {
-      solution.split(' ').forEach(move => {
-        // Here we would ideally have a delay for animation
+      solution.split(' ').filter(move => move).forEach(move => {
         applyMove(move);
       });
     }
