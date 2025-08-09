@@ -33,10 +33,11 @@ export const useCubeStore = create<CubeState>((set, get) => ({
 
   applyMove: (move) => {
     const { operator } = get();
-    operator.execute(move);
+    operator.execute(move); // This mutates the cube instance
     set((state) => ({
-      // The cube object inside the operator is mutated directly by execute()
-      cube: operator.cube,
+      // To trigger a re-render in React, we must create a new object reference.
+      // We do this by cloning the cube object after it has been mutated.
+      cube: operator.cube.clone(),
       moveCount: state.moveCount + 1,
       moveLog: [...state.moveLog, move],
       isSolved: operator.cube.solved(),
